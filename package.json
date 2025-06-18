@@ -2,28 +2,30 @@
   "name": "augment-usage-tracker",
   "displayName": "Augment Usage Tracker",
   "description": "Track and display Augment AI usage statistics in VSCode status bar",
-  "version": "1.0.0",
-  "publisher": "augment-tracker",
+  "version": "1.0.1",
+  "publisher": "augment-usage-tracker",
   "author": {
-    "name": "Augment Tracker Team",
-    "email": "contact@augment-tracker.com"
+    "name": "akapril",
+    "email": "wiq@live.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/augment-tracker/vscode-extension"
+    "url": "https://github.com/akapril/augment-usage-tracker"
   },
   "bugs": {
-    "url": "https://github.com/augment-tracker/vscode-extension/issues"
+    "url": "https://github.com/akapril/augment-usage-tracker/issues"
   },
-  "homepage": "https://github.com/augment-tracker/vscode-extension#readme",
+  "homepage": "https://github.com/akapril/augment-usage-tracker#readme",
   "license": "MIT",
   "engines": {
     "vscode": "^1.74.0"
   },
+  "extensionKind": [
+    "ui"
+  ],
   "categories": [
     "Other"
   ],
-
   "keywords": [
     "augment",
     "ai",
@@ -31,6 +33,11 @@
     "tracker",
     "statistics"
   ],
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#007ACC",
+    "theme": "dark"
+  },
   "activationEvents": [
     "onStartupFinished"
   ],
@@ -66,8 +73,7 @@
         "command": "augmentTracker.webLogin",
         "title": "🌐 Web Login (Auto)",
         "category": "Augment Tracker"
-      }
-,
+      },
       {
         "command": "augmentTracker.manualRefresh",
         "title": "🔄 Manual Refresh",
