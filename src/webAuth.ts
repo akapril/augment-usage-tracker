@@ -11,9 +11,18 @@ export interface WebAuthResult {
 
 export class WebAuthManager {
     private readonly AUGMENT_LOGIN_URL = 'https://app.augmentcode.com';
-    private readonly AUGMENT_DASHBOARD_URL = 'https://app.augmentcode.com/dashboard';
     private readonly CALLBACK_PORT = 3000;
     private server: http.Server | null = null;
+    private apiClient: any = null;
+
+    constructor(apiClient?: any) {
+        // 接受可选的API客户端参数
+        this.apiClient = apiClient;
+    }
+
+    setApiClient(apiClient: any) {
+        this.apiClient = apiClient;
+    }
 
     async authenticateWithWebLogin(): Promise<WebAuthResult> {
         try {
@@ -22,7 +31,7 @@ export class WebAuthManager {
                 location: vscode.ProgressLocation.Notification,
                 title: "Augment Web Authentication",
                 cancellable: true
-            }, async (progress, token) => {
+            }, async (progress, _token) => {
                 
                 progress.report({ increment: 0, message: "Opening Augment login page..." });
                 
@@ -46,26 +55,35 @@ export class WebAuthManager {
                 
                 progress.report({ increment: 50, message: "Waiting for cookie input..." });
                 
-                // 提示用户获取cookie
+                // 提示用户获取cookie（支持HttpOnly）
                 const cookieInstructions = await vscode.window.showInformationMessage(
-                    '🍪 Now we need to get your session cookies:\n\n' +
-                    '1. In your browser, press F12 to open Developer Tools\n' +
-                    '2. Go to Application tab → Cookies → app.augmentcode.com\n' +
-                    '3. Copy all cookie values\n\n' +
-                    'Or use our automatic cookie extractor!',
-                    'Auto Extract',
-                    'Manual Input',
-                    'Cancel'
+                    '🍪 获取Session Cookies（支持HttpOnly）:\n\n' +
+                    '📋 方法1 - 开发者工具（推荐）:\n' +
+                    '1. 按F12打开开发者工具\n' +
+                    '2. 切换到Application/Storage标签页\n' +
+                    '3. 左侧选择Cookies → app.augmentcode.com\n' +
+                    '4. 找到_session cookie并复制其Value\n\n' +
+                    '🔧 方法2 - Network标签页:\n' +
+                    '1. 开发者工具 → Network标签页\n' +
+                    '2. 刷新页面或访问/api/user\n' +
+                    '3. 查看请求的Cookie请求头\n' +
+                    '4. 复制_session=xxx部分',
+                    '📋 手动输入Cookie',
+                    '🔧 自动提取器',
+                    '❌ 取消'
                 );
                 
-                if (cookieInstructions === 'Cancel') {
+                if (cookieInstructions === '❌ 取消') {
                     return { success: false, error: 'User cancelled cookie extraction' };
                 }
-                
+
                 progress.report({ increment: 75, message: "Getting cookies..." });
-                
-                if (cookieInstructions === 'Auto Extract') {
+
+                if (cookieInstructions === '🔧 自动提取器') {
                     return await this.startAutoSessionExtraction();
+                } else if (cookieInstructions === '📋 手动输入Cookie') {
+                    // 直接使用手动输入方法
+                    return await this.manualCookieInput();
                 } else {
                     return await this.manualCookieInput();
                 }
@@ -79,70 +97,7 @@ export class WebAuthManager {
         }
     }
 
-    private async autoExtractCookies(): Promise<WebAuthResult> {
-        try {
-            // 显示JavaScript代码让用户在浏览器控制台执行
-            const jsCode = `
-// Augment Cookie Extractor
-(function() {
-    const cookies = document.cookie;
-    if (cookies.includes('_session=')) {
-        console.log('✅ Cookies extracted successfully!');
-        console.log('📋 Copy the following line:');
-        console.log('COOKIES_START');
-        console.log(cookies);
-        console.log('COOKIES_END');
-        
-        // 尝试复制到剪贴板
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(cookies).then(() => {
-                console.log('✅ Cookies copied to clipboard!');
-            }).catch(() => {
-                console.log('⚠️ Please manually copy the cookies above');
-            });
-        }
-        
-        alert('✅ Cookies extracted! Check console and paste in VSCode.');
-        return cookies;
-    } else {
-        console.log('❌ No valid session found. Please make sure you are logged in.');
-        alert('❌ Please login first, then run this script again.');
-        return null;
-    }
-})();`;
 
-            // 显示JavaScript代码
-            const doc = await vscode.workspace.openTextDocument({
-                content: jsCode,
-                language: 'javascript'
-            });
-            await vscode.window.showTextDocument(doc);
-            
-            const instruction = await vscode.window.showInformationMessage(
-                '🔧 Auto Cookie Extractor:\n\n' +
-                '1. Copy the JavaScript code shown above\n' +
-                '2. In your browser (on app.augmentcode.com), press F12\n' +
-                '3. Go to Console tab\n' +
-                '4. Paste and press Enter\n' +
-                '5. Copy the cookies output\n' +
-                '6. Click "Paste Cookies" below',
-                'Paste Cookies',
-                'Cancel'
-            );
-            
-            if (instruction === 'Paste Cookies') {
-                return await this.manualCookieInput();
-            } else {
-                return { success: false, error: 'User cancelled auto extraction' };
-            }
-            
-        } catch (error) {
-            return {
-                success: false,
-                error: `Auto extraction failed: ${error}`
-            };
-        }
-    }
 
     private async manualCookieInput(): Promise<WebAuthResult> {
         const cookies = await vscode.window.showInputBox({
@@ -281,6 +236,9 @@ export class WebAuthManager {
                 } else if (parsedUrl.pathname === '/api-extract') {
                     // 处理API响应头提取
                     this.handleApiExtraction(req, res, resolve, reject);
+                } else if (parsedUrl.pathname === '/configure-cookie') {
+                    // 处理cookie配置请求
+                    this.handleCookieConfiguration(req, res);
                 } else {
                     // 提供Cookie提取页面
                     this.serveCookieExtractorPage(res);
@@ -323,15 +281,93 @@ export class WebAuthManager {
                 body += chunk.toString();
             });
 
-            req.on('end', () => {
+            req.on('end', async () => {
                 try {
                     const data = JSON.parse(body);
                     if (data.cookies && data.cookies.includes('_session=')) {
+                        console.log('🍪 收到手动输入的Cookie:', data.cookies.substring(0, 50) + '...');
+                        console.log('🔍 API客户端状态:', {
+                            hasApiClient: !!this.apiClient,
+                            apiClientType: this.apiClient ? typeof this.apiClient : 'undefined',
+                            apiClientConstructor: this.apiClient ? this.apiClient.constructor.name : 'N/A'
+                        });
+
+                        // 立即配置到API客户端
+                        try {
+                            // 尝试多种方式获取API客户端
+                            let apiClient = this.apiClient;
+
+                            // 如果this.apiClient不可用，尝试通过全局方式获取
+                            if (!apiClient && (global as any).augmentDetector) {
+                                apiClient = (global as any).augmentDetector.apiClient;
+                                console.log('🔄 通过全局方式获取API客户端');
+                            }
+
+                            // 如果还是不可用，尝试通过require方式获取
+                            if (!apiClient) {
+                                try {
+                                    const vscode = require('vscode');
+                                    const extension = vscode.extensions.getExtension('your-extension-id');
+                                    if (extension && extension.exports && extension.exports.apiClient) {
+                                        apiClient = extension.exports.apiClient;
+                                        console.log('🔄 通过扩展exports获取API客户端');
+                                    }
+                                } catch (e) {
+                                    console.log('🔄 无法通过扩展exports获取API客户端');
+                                }
+                            }
+
+                            if (apiClient) {
+                                console.log('🔧 正在配置Cookie到API客户端...');
+
+                                // 检查setCookies方法是否存在
+                                if (typeof apiClient.setCookies === 'function') {
+                                    await apiClient.setCookies(data.cookies);
+                                    console.log('✅ Cookie已配置到API客户端');
+
+                                    // 验证cookie是否真的设置了
+                                    if (typeof apiClient.hasCookies === 'function') {
+                                        const hasCookies = apiClient.hasCookies();
+                                        console.log('🔍 Cookie设置验证:', hasCookies);
+                                    }
+
+                                    // 测试API连接
+                                    if (typeof apiClient.getCreditsInfo === 'function') {
+                                        const testResult = await apiClient.getCreditsInfo();
+                                        if (testResult.success) {
+                                            console.log('✅ API连接测试成功');
+                                        } else {
+                                            console.warn('⚠️ API连接测试失败:', testResult.error);
+                                        }
+                                    } else {
+                                        console.warn('⚠️ API客户端没有getCreditsInfo方法');
+                                    }
+                                } else {
+                                    console.error('❌ API客户端没有setCookies方法');
+                                }
+                            } else {
+                                console.warn('⚠️ API客户端不可用，Cookie将在后续配置');
+                                console.log('🔍 WebAuthManager状态:', {
+                                    hasThis: !!this,
+                                    thisKeys: Object.keys(this),
+                                    apiClientValue: this.apiClient
+                                });
+                            }
+                        } catch (configError) {
+                            console.error('❌ 配置Cookie到API客户端失败:', configError);
+                            if (configError instanceof Error) {
+                                console.error('❌ 错误详情:', {
+                                    message: configError.message,
+                                    stack: configError.stack
+                                });
+                            }
+                        }
+
                         res.writeHead(200, {
                             'Content-Type': 'application/json',
                             'Access-Control-Allow-Origin': '*'
                         });
-                        res.end(JSON.stringify({ success: true, message: 'Cookies received successfully' }));
+                        res.end(JSON.stringify({ success: true, message: 'Cookies received and configured successfully' }));
 
                         this.cleanup();
                         resolve({
@@ -472,24 +508,79 @@ export class WebAuthManager {
 </head>
 <body>
     <div class="container">
-        <h1>🍪 Augment Cookie 自动提取器</h1>
-        <p>这个工具将帮助您自动提取Augment的session cookie，无需手动复制粘贴。</p>
+        <h1>🍪 Augment Cookie 配置中心</h1>
+        <p>这个工具提供多种方式来获取和配置Augment的session cookie，选择最适合您的方法。</p>
 
         <div class="step">
-            <h3>步骤 1: 登录 Augment</h3>
-            <p>首先确保您已经登录到Augment。如果还没有登录，请点击下面的按钮。</p>
-            <button class="button" onclick="openAugmentLogin()">🌐 打开 Augment 登录</button>
+            <h3>🎯 方法1: 直接输入Cookie（推荐）</h3>
+            <p>如果您已经获取了Cookie，可以直接粘贴到下面的文本框中：</p>
+            <textarea id="cookieInput" placeholder="粘贴您的Cookie内容...&#10;&#10;支持格式：&#10;• _session=eyJhbGciOiJIUzI1NiJ9...&#10;• 完整的Cookie字符串&#10;• 或者只是session值" style="width: 100%; height: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: monospace; font-size: 14px; margin: 10px 0;"></textarea>
+            <button class="button" onclick="submitManualCookie()">✅ 配置Cookie</button>
+            <button class="button" onclick="showCookieGuide()">📖 如何获取Cookie？</button>
         </div>
 
         <div class="step">
-            <h3>步骤 2: 自动提取 Cookie</h3>
-            <p>登录完成后，选择提取方法：</p>
-            <button class="button" id="apiExtractBtn" onclick="extractFromApi()">🚀 从API响应头提取（推荐）</button>
+            <h3>🚀 方法2: 自动提取Cookie</h3>
+            <p>首先确保您已经登录到Augment，然后选择自动提取方法：</p>
+            <button class="button" onclick="openAugmentLogin()">🌐 打开 Augment 登录</button>
+            <button class="button" id="apiExtractBtn" onclick="extractFromApi()">🚀 从API响应头提取</button>
             <button class="button" id="extractBtn" onclick="extractCookies()">🔄 从浏览器提取</button>
         </div>
 
         <div id="status" class="status">
             <span id="statusMessage"></span>
+        </div>
+
+        <div id="cookieGuide" class="step" style="display: none;">
+            <h3>📋 Cookie获取详细教程</h3>
+            <div class="highlight">
+                <h4>🎯 方法A: 浏览器开发者工具（最可靠）</h4>
+                <ol>
+                    <li><strong>打开Augment网站</strong>：访问 <a href="https://app.augmentcode.com" target="_blank">app.augmentcode.com</a> 并确保已登录</li>
+                    <li><strong>打开开发者工具</strong>：按 <code>F12</code> 键或右键页面选择"检查元素"</li>
+                    <li><strong>导航到Cookie存储</strong>：
+                        <ul>
+                            <li>点击 <code>Application</code> 标签页</li>
+                            <li>在左侧面板找到 <code>Storage</code> → <code>Cookies</code></li>
+                            <li>点击 <code>https://app.augmentcode.com</code></li>
+                        </ul>
+                    </li>
+                    <li><strong>复制Session Cookie</strong>：
+                        <ul>
+                            <li>在右侧找到名为 <code>_session</code> 的cookie</li>
+                            <li>双击 <code>Value</code> 列中的值</li>
+                            <li>按 <code>Ctrl+C</code> 复制</li>
+                        </ul>
+                    </li>
+                    <li><strong>粘贴到上方文本框</strong>：返回此页面，粘贴到"方法1"的文本框中</li>
+                </ol>
+
+                <h4>🔧 方法B: Network标签页（备用方法）</h4>
+                <ol>
+                    <li>在开发者工具中切换到 <code>Network</code> 标签页</li>
+                    <li>刷新Augment页面或访问任意功能</li>
+                    <li>点击任意请求查看详情</li>
+                    <li>在 <code>Request Headers</code> 中找到 <code>Cookie</code> 字段</li>
+                    <li>复制整个Cookie字符串或只复制 <code>_session=xxx</code> 部分</li>
+                </ol>
+
+                <h4>💡 格式说明</h4>
+                <p>支持以下任意格式：</p>
+                <ul>
+                    <li><code>_session=eyJhbGciOiJIUzI1NiJ9...</code> （推荐格式）</li>
+                    <li><code>eyJhbGciOiJIUzI1NiJ9...</code> （只有session值）</li>
+                    <li><code>_session=xxx; other_cookie=yyy</code> （完整Cookie字符串）</li>
+                </ul>
+
+                <h4>⚠️ 注意事项</h4>
+                <ul>
+                    <li>确保已经登录到Augment账户</li>
+                    <li>Session值通常很长（100+字符），以 <code>eyJ</code> 开头</li>
+                    <li>如果找不到_session，可能是HttpOnly cookie，请使用开发者工具方法</li>
+                    <li>Cookie包含敏感信息，请妥善保管</li>
+                </ul>
+            </div>
+            <button class="button" onclick="hideCookieGuide()">🔙 返回</button>
         </div>
 
         <div class="step">
@@ -538,7 +629,133 @@ export class WebAuthManager {
 
         function openAugmentLogin() {
             window.open('https://app.augmentcode.com', '_blank');
-            showStatus('请在新窗口中完成登录，然后返回此页面点击"自动提取 Cookie"', 'info');
+            showStatus('请在新窗口中完成登录，然后返回此页面使用任意方法获取Cookie', 'info');
+        }
+
+        function showCookieGuide() {
+            document.getElementById('cookieGuide').style.display = 'block';
+            document.getElementById('cookieGuide').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideCookieGuide() {
+            document.getElementById('cookieGuide').style.display = 'none';
+        }
+
+        async function submitManualCookie() {
+            const cookieInput = document.getElementById('cookieInput');
+            const cookieValue = cookieInput.value.trim();
+
+            if (!cookieValue) {
+                showStatus('❌ 请先输入Cookie内容', 'error');
+                cookieInput.focus();
+                return;
+            }
+
+            // 验证Cookie格式
+            const validation = validateCookieFormat(cookieValue);
+            if (!validation.valid) {
+                showStatus('❌ ' + validation.error, 'error');
+                cookieInput.focus();
+                return;
+            }
+
+            // 解析Cookie数据
+            const parsedData = parseCookieData(cookieValue);
+            showStatus('🔄 正在配置Cookie...', 'info');
+
+            try {
+                // 发送到VSCode
+                await sendCookiesToVSCode(parsedData.cookies);
+            } catch (error) {
+                showStatus('❌ 配置失败: ' + error.message, 'error');
+            }
+        }
+
+        function validateCookieFormat(cookieValue) {
+            if (!cookieValue || cookieValue.trim().length === 0) {
+                return { valid: false, error: 'Cookie不能为空' };
+            }
+
+            const trimmed = cookieValue.trim();
+
+            // 检查是否包含_session
+            if (!trimmed.includes('_session=')) {
+                return { valid: false, error: '请确保包含_session cookie' };
+            }
+
+            // 提取session值
+            const match = trimmed.match(/_session=([^;]+)/);
+            if (!match) {
+                return { valid: false, error: '无法提取_session值' };
+            }
+
+            const sessionValue = match[1];
+            if (!sessionValue || sessionValue.length < 50) {
+                return { valid: false, error: 'Session值太短，请检查是否完整' };
+            }
+
+            // 检查是否是Augment的URL编码session格式
+            if (sessionValue.includes('%') && sessionValue.includes('.')) {
+                // 这是Augment的标准格式：URL编码的payload + 签名
+                return { valid: true };
+            }
+
+            // 检查是否是标准JWT格式
+            if (sessionValue.startsWith('eyJ')) {
+                const parts = sessionValue.split('.');
+                if (parts.length === 3) {
+                    return { valid: true };
+                }
+            }
+
+            // 其他长度合理的session值也认为是有效的
+            if (sessionValue.length >= 50) {
+                return { valid: true };
+            }
+
+            return { valid: false, error: '无法识别的session格式' };
+        }
+
+        function parseCookieData(cookieValue) {
+            const trimmed = cookieValue.trim();
+            let sessionValue = '';
+            let cookies = '';
+
+            if (trimmed.includes('_session=')) {
+                // 完整的cookie字符串
+                cookies = trimmed;
+                const match = trimmed.match(/_session=([^;]+)/);
+                if (match) {
+                    sessionValue = match[1];
+                }
+            } else if (trimmed.startsWith('eyJ')) {
+                // 只有session值
+                sessionValue = trimmed;
+                cookies = '_session=' + sessionValue;
+            }
+
+            // 尝试解析JWT获取用户信息
+            let userInfo = undefined;
+            try {
+                if (sessionValue.startsWith('eyJ')) {
+                    const payload = sessionValue.split('.')[1];
+                    const decoded = JSON.parse(atob(payload));
+                    userInfo = {
+                        userId: decoded.user_id,
+                        email: decoded.email,
+                        exp: decoded.exp
+                    };
+                    console.log('📊 解析的用户信息:', userInfo);
+                }
+            } catch (error) {
+                console.log('⚠️ JWT解析失败，使用原始值:', error);
+            }
+
+            return {
+                cookies,
+                sessionValue,
+                userInfo
+            };
         }
 
         async function extractFromApi() {
@@ -638,14 +855,25 @@ export class WebAuthManager {
 
                     // 显示详细的手动指导
                     const manualInstructions = \`
-请按照以下步骤手动获取cookies：
+🍪 HttpOnly Cookie提取指南：
 
+📋 方法1 - Application标签页（推荐）：
 1. 打开新标签页访问: https://app.augmentcode.com
 2. 确保您已登录
 3. 按F12打开开发者工具
-4. 在Console中输入: document.cookie
-5. 复制输出结果
-6. 点击下面的"手动输入Cookie"按钮
+4. 切换到Application/Storage标签页
+5. 左侧选择Cookies → app.augmentcode.com
+6. 找到_session cookie，复制其Value值
+
+🔧 方法2 - Network标签页：
+1. 开发者工具 → Network标签页
+2. 刷新页面或访问任意API
+3. 点击任意请求
+4. 查看Request Headers中的Cookie
+5. 复制_session=xxx部分
+
+⚠️ 注意：如果_session是HttpOnly cookie，
+document.cookie无法获取，请使用上述方法。
                     \`;
 
                     if (confirm(manualInstructions + '\\n\\n点击确定打开Augment页面')) {
@@ -792,7 +1020,7 @@ export class WebAuthManager {
         res.end(html);
     }
 
-    private handleApiExtraction(req: http.IncomingMessage, res: http.ServerResponse, resolve: (value: WebAuthResult) => void, reject: (reason?: any) => void) {
+    private handleApiExtraction(req: http.IncomingMessage, res: http.ServerResponse, resolve: (value: WebAuthResult) => void, _reject: (reason?: any) => void) {
         if (req.method === 'POST') {
             let body = '';
             req.on('data', chunk => {
@@ -966,6 +1194,90 @@ export class WebAuthManager {
         } catch (error) {
             console.error('❌ Error extracting session from API:', error);
             return null;
+        }
+    }
+
+    private async handleCookieConfiguration(req: http.IncomingMessage, res: http.ServerResponse) {
+        if (req.method === 'POST') {
+            let body = '';
+            req.on('data', chunk => {
+                body += chunk.toString();
+            });
+
+            req.on('end', async () => {
+                try {
+                    const data = JSON.parse(body);
+                    console.log('🔧 收到配置请求:', data.cookies ? data.cookies.substring(0, 50) + '...' : 'no cookies');
+
+                    if (data.cookies && data.cookies.includes('_session=')) {
+                        // 尝试多种方式获取API客户端
+                        let apiClient = this.apiClient;
+
+                        // 如果this.apiClient不可用，尝试通过全局方式获取
+                        if (!apiClient && (global as any).augmentDetector) {
+                            apiClient = (global as any).augmentDetector.apiClient;
+                            console.log('🔄 通过全局方式获取API客户端');
+                        }
+
+                        if (apiClient && typeof apiClient.setCookies === 'function') {
+                            try {
+                                await apiClient.setCookies(data.cookies);
+                                console.log('✅ Cookie已通过配置端点设置到API客户端');
+
+                                // 验证设置
+                                if (typeof apiClient.hasCookies === 'function') {
+                                    const hasCookies = apiClient.hasCookies();
+                                    console.log('🔍 配置端点Cookie验证:', hasCookies);
+                                }
+
+                                // 测试连接
+                                if (typeof apiClient.getCreditsInfo === 'function') {
+                                    const testResult = await apiClient.getCreditsInfo();
+                                    console.log('🔍 配置端点API测试:', testResult.success ? '成功' : '失败');
+                                }
+
+                                res.writeHead(200, {
+                                    'Content-Type': 'application/json',
+                                    'Access-Control-Allow-Origin': '*'
+                                });
+                                res.end(JSON.stringify({
+                                    success: true,
+                                    message: 'Cookie configured successfully via configuration endpoint'
+                                }));
+                                return;
+                            } catch (error) {
+                                console.error('❌ 配置端点设置Cookie失败:', error);
+                            }
+                        } else {
+                            console.warn('⚠️ 配置端点：API客户端不可用或缺少setCookies方法');
+                        }
+                    }
+
+                    res.writeHead(400, {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    });
+                    res.end(JSON.stringify({ success: false, message: 'Configuration failed' }));
+
+                } catch (error) {
+                    console.error('❌ 配置端点处理错误:', error);
+                    res.writeHead(500, {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    });
+                    res.end(JSON.stringify({ success: false, message: 'Server error' }));
+                }
+            });
+        } else if (req.method === 'OPTIONS') {
+            res.writeHead(200, {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            });
+            res.end();
+        } else {
+            res.writeHead(405, { 'Content-Type': 'text/plain' });
+            res.end('Method Not Allowed');
         }
     }
 

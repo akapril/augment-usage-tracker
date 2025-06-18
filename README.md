@@ -101,7 +101,7 @@ MIT许可证 - 详情请查看LICENSE文件。
 ## 📞 支持与反馈
 
 - 在GitHub上报告问题
-- 邮箱：contact@augment-tracker.com
+- 邮箱：wiq@live.com
 - 在VSCode商店评分和评论
 
 ---

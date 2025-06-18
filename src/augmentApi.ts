@@ -39,6 +39,15 @@ export interface AugmentUsageData {
     renewalDate?: string;
 }
 
+export interface AugmentUserInfo {
+    email?: string;
+    name?: string;
+    id?: string;
+    plan?: string;
+    avatar?: string;
+    verified?: boolean;
+}
+
 export class AugmentApiClient {
     private readonly API_BASE_URL = 'https://app.augmentcode.com/api';
     private readonly WEB_BASE_URL = 'https://app.augmentcode.com';
@@ -279,6 +288,29 @@ export class AugmentApiClient {
         }
     }
 
+    async parseUserResponse(response: AugmentApiResponse): Promise<AugmentUserInfo | null> {
+        if (!response.success || !response.data) {
+            return null;
+        }
+
+        try {
+            const data = response.data;
+
+            // 基于HAR文件分析的用户API响应格式
+            return {
+                email: data.email || data.emailAddress || data.userEmail,
+                name: data.name || data.displayName || data.fullName || data.username,
+                id: data.id || data.userId || data.user_id,
+                plan: data.plan || data.planType || data.subscriptionType,
+                avatar: data.avatar || data.avatarUrl || data.profileImage,
+                verified: data.verified || data.emailVerified || false
+            };
+        } catch (error) {
+            console.error('Error parsing user response:', error);
+            return null;
+        }
+    }
+
     async promptForAuthToken(): Promise<boolean> {
         const token = await vscode.window.showInputBox({
             prompt: 'Enter your Augment authentication token',
@@ -302,25 +334,38 @@ export class AugmentApiClient {
 
     async promptForCookies(): Promise<boolean> {
         const cookies = await vscode.window.showInputBox({
-            prompt: 'Enter your Augment session cookies',
-            placeHolder: 'Copy cookies from browser after logging into app.augmentcode.com',
+            prompt: '请输入您的Augment session cookies',
+            placeHolder: '从浏览器复制cookie，支持完整cookie字符串或单独的session值',
             password: true,
             ignoreFocusOut: true,
             validateInput: (value) => {
                 if (!value || value.trim().length === 0) {
-                    return 'Cookies cannot be empty';
+                    return 'Cookie不能为空';
                 }
-                if (!value.includes('_session=')) {
-                    return 'Invalid cookies format - should contain _session=';
+
+                const trimmed = value.trim();
+
+                // 检查是否包含_session或者是URL编码的session格式
+                if (!trimmed.includes('_session=') && !trimmed.startsWith('eyJ')) {
+                    return '无效的Cookie格式 - 应包含_session=或以eyJ开头的session值';
                 }
+
+                // 检查长度是否合理
+                if (trimmed.length < 50) {
+                    return 'Cookie值太短，请检查是否完整';
+                }
+
                 return null;
             }
         });
 
         if (cookies) {
+            console.log('🍪 用户输入的Cookie:', cookies.substring(0, 50) + '...');
             await this.setCookies(cookies.trim());
+            console.log('✅ Cookie已保存到API客户端');
             return true;
         }
+        console.log('❌ 用户取消了Cookie输入');
         return false;
     }
 

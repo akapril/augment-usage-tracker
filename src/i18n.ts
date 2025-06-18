@@ -81,7 +81,7 @@ const messages = {
         'status.pleaseConfigureAuth': '💡 请先配置认证信息',
         
         // Dialog messages
-        'dialog.browserOpened': '🌐 浏览器已打开！请登录Augment，然后使用"设置浏览器Cookie"命令。',
+        'dialog.browserOpened': '🌐 浏览器已打开！请登录Augment，然后使用"设置浏览器Cookie"命令。只需要获取_session cookie即可。格式_session=eyxsfgfgs......',
         'dialog.setupCookies': '设置Cookie',
         'dialog.cancel': '取消',
         'dialog.webLoginError': '❌ 网页登录错误',

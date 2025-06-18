@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { UsageTracker } from './usageTracker';
 import { ConfigManager } from './config';
 import { AugmentStatus } from './augmentDetector';
+import { AugmentUserInfo } from './augmentApi';
 import { t } from './i18n';
 
 export class StatusBarManager implements vscode.Disposable {
@@ -10,6 +11,7 @@ export class StatusBarManager implements vscode.Disposable {
     private configManager: ConfigManager;
     private refreshTimer: NodeJS.Timeout | undefined;
     private augmentStatus: AugmentStatus | null = null;
+    private userInfo: AugmentUserInfo | null = null;
 
     constructor(usageTracker: UsageTracker, configManager: ConfigManager) {
         this.usageTracker = usageTracker;
@@ -74,10 +76,35 @@ export class StatusBarManager implements vscode.Disposable {
 
         // Update text with usage information and data source indicator
         const dataIndicator = hasRealData ? '●' : '○';
-        this.statusBarItem.text = `$(pulse) Augment: ${usage}/${limit} ${dataIndicator}`;
+
+        // 如果有用户信息，显示邮箱；否则显示基本信息
+        let displayText = `$(pulse) Augment: ${usage}/${limit} ${dataIndicator}`;
+        if (this.userInfo && this.userInfo.email) {
+            // 显示邮箱的前缀部分（@之前的部分）
+            const emailPrefix = this.userInfo.email.split('@')[0];
+            displayText = `$(pulse) ${emailPrefix}: ${usage}/${limit} ${dataIndicator}`;
+        }
+
+        this.statusBarItem.text = displayText;
 
         // Build detailed tooltip
-        let tooltip = `${t('tooltip.augmentUsageTracker')}
+        let tooltip = `${t('tooltip.augmentUsageTracker')}`;
+
+        // 添加用户信息到tooltip
+        if (this.userInfo) {
+            tooltip += `\n\n用户信息:`;
+            if (this.userInfo.email) {
+                tooltip += `\n• 邮箱: ${this.userInfo.email}`;
+            }
+            if (this.userInfo.name) {
+                tooltip += `\n• 姓名: ${this.userInfo.name}`;
+            }
+            if (this.userInfo.plan) {
+                tooltip += `\n• 计划: ${this.userInfo.plan}`;
+            }
+        }
+
+        tooltip += `\n\n使用情况:
 ${t('tooltip.current')}: ${usage} ${t('credits')}
 ${t('tooltip.limit')}: ${limit} ${t('credits')}
 ${t('tooltip.usage')}: ${percentage}%
@@ -125,6 +152,11 @@ ${t('tooltip.dataSource')}: ${this.getDataSourceDescription(dataSource, hasRealD
 
     updateAugmentStatus(status: AugmentStatus) {
         this.augmentStatus = status;
+        this.updateDisplay();
+    }
+
+    updateUserInfo(userInfo: AugmentUserInfo | null) {
+        this.userInfo = userInfo;
         this.updateDisplay();
     }
 

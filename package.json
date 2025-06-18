@@ -2,7 +2,7 @@
   "name": "augment-usage-tracker",
   "displayName": "Augment Usage Tracker",
   "description": "Track and display Augment AI usage statistics in VSCode status bar",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "augment-usage-tracker",
   "author": {
     "name": "akapril",
@@ -46,57 +46,62 @@
     "commands": [
       {
         "command": "augmentTracker.resetUsage",
-        "title": "Reset Usage Statistics",
+        "title": "%command.resetUsage%",
         "category": "Augment Tracker"
       },
       {
         "command": "augmentTracker.openSettings",
-        "title": "Open Settings",
+        "title": "%command.openSettings%",
         "category": "Augment Tracker"
       },
       {
         "command": "augmentTracker.showDetails",
-        "title": "Show Usage Details",
+        "title": "%command.showDetails%",
         "category": "Augment Tracker"
       },
       {
         "command": "augmentTracker.setupCookies",
-        "title": "Setup Browser Cookies",
+        "title": "%command.setupCookies%",
+        "category": "Augment Tracker"
+      },
+      {
+        "command": "augmentTracker.simpleCookieSetup",
+        "title": "🍪 超简单Cookie配置",
         "category": "Augment Tracker"
       },
       {
         "command": "augmentTracker.checkAuthStatus",
-        "title": "Check Authentication Status",
+        "title": "%command.checkAuthStatus%",
         "category": "Augment Tracker"
       },
       {
         "command": "augmentTracker.webLogin",
-        "title": "🌐 Web Login (Auto)",
+        "title": "%command.webLogin%",
         "category": "Augment Tracker"
       },
       {
         "command": "augmentTracker.manualRefresh",
-        "title": "🔄 Manual Refresh",
+        "title": "%command.manualRefresh%",
         "category": "Augment Tracker"
       },
       {
         "command": "augmentTracker.setLanguage",
-        "title": "🌐 Set Language",
+        "title": "%command.setLanguage%",
         "category": "Augment Tracker"
       },
       {
         "command": "augmentTracker.checkCookieStatus",
-        "title": "🍪 Check Cookie Status",
+        "title": "%command.checkCookieStatus%",
         "category": "Augment Tracker"
       },
       {
         "command": "augmentTracker.refreshCookie",
-        "title": "🔄 Refresh Cookie",
+        "title": "%command.refreshCookie%",
         "category": "Augment Tracker"
       },
       {
         "command": "augmentTracker.logout",
-        "title": "🚪 Logout",
+        "title": "%command.logout%",
         "category": "Augment Tracker"
       }
     ],

@@ -4,6 +4,7 @@ import { ConfigManager } from './config';
 
 export interface RealUsageData {
     totalUsage?: number;
+    usageLimit?: number;
     dailyUsage?: number;
     lastUpdate?: string;
 }
@@ -13,6 +14,7 @@ export class UsageTracker implements vscode.Disposable {
     private configManager: ConfigManager;
     private disposables: vscode.Disposable[] = [];
     private currentUsage: number = 0;
+    private currentLimit: number = 0;
     private lastResetDate: string = '';
     private hasRealData: boolean = false;
     private realDataSource: string = 'simulation';
@@ -70,10 +72,9 @@ export class UsageTracker implements vscode.Disposable {
     }
 
     getCurrentLimit(): number {
-        // 如果有真实数据，返回API中的limit，否则返回0表示未知
+        // 如果有真实数据，返回API中的真实limit
         if (this.hasRealData && this.realDataSource === 'augment_api') {
-            // 这里应该从API数据中获取limit，暂时返回默认值
-            return 56; // 可以从API响应中获取真实的limit
+            return this.currentLimit;
         }
         return 0; // 没有真实数据时返回0
     }
@@ -93,8 +94,11 @@ export class UsageTracker implements vscode.Disposable {
     async updateWithRealData(realData: RealUsageData): Promise<void> {
         try {
             if (realData.totalUsage !== undefined) {
-                // Update with real total usage
+                // Update with real total usage and limit
                 this.currentUsage = realData.totalUsage;
+                if (realData.usageLimit !== undefined) {
+                    this.currentLimit = realData.usageLimit;
+                }
                 this.hasRealData = true;
                 this.realDataSource = 'augment_api';
 
@@ -175,7 +179,8 @@ export class UsageTracker implements vscode.Disposable {
 
     private async fetchRealUsageData(): Promise<void> {
         try {
-            if (this.realDataFetcher) {
+            // 检查是否已退出登录或数据获取器被清除
+            if (this.realDataFetcher && this.hasRealData !== false) {
                 await this.realDataFetcher();
             }
         } catch (error) {
@@ -184,12 +189,28 @@ export class UsageTracker implements vscode.Disposable {
     }
 
     // 设置真实数据获取器（由extension.ts调用）
-    setRealDataFetcher(fetcher: () => Promise<void>): void {
+    setRealDataFetcher(fetcher: (() => Promise<void>) | null): void {
         this.realDataFetcher = fetcher;
+    }
+
+    // 清除真实数据标志（用于退出登录）
+    clearRealDataFlag(): void {
+        this.hasRealData = false;
+        this.realDataSource = 'no_data';
+        this.currentUsage = 0;
+        this.currentLimit = 0;
+    }
+
+    // 停止数据获取（用于退出登录）
+    stopDataFetching(): void {
+        this.realDataFetcher = null;
+        this.clearRealDataFlag();
     }
 
     dispose() {
         this.disposables.forEach(d => d.dispose());
         this.disposables = [];
+        // 清理数据获取器
+        this.realDataFetcher = null;
     }
 }
