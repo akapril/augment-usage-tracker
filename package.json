@@ -1,0 +1,150 @@
+{
+  "name": "augment-usage-tracker",
+  "displayName": "Augment Usage Tracker",
+  "description": "Track and display Augment AI usage statistics in VSCode status bar",
+  "version": "1.0.0",
+  "publisher": "augment-tracker",
+  "author": {
+    "name": "Augment Tracker Team",
+    "email": "contact@augment-tracker.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/augment-tracker/vscode-extension"
+  },
+  "bugs": {
+    "url": "https://github.com/augment-tracker/vscode-extension/issues"
+  },
+  "homepage": "https://github.com/augment-tracker/vscode-extension#readme",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+
+  "keywords": [
+    "augment",
+    "ai",
+    "usage",
+    "tracker",
+    "statistics"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "augmentTracker.resetUsage",
+        "title": "Reset Usage Statistics",
+        "category": "Augment Tracker"
+      },
+      {
+        "command": "augmentTracker.openSettings",
+        "title": "Open Settings",
+        "category": "Augment Tracker"
+      },
+      {
+        "command": "augmentTracker.showDetails",
+        "title": "Show Usage Details",
+        "category": "Augment Tracker"
+      },
+      {
+        "command": "augmentTracker.setupCookies",
+        "title": "Setup Browser Cookies",
+        "category": "Augment Tracker"
+      },
+      {
+        "command": "augmentTracker.checkAuthStatus",
+        "title": "Check Authentication Status",
+        "category": "Augment Tracker"
+      },
+      {
+        "command": "augmentTracker.webLogin",
+        "title": "🌐 Web Login (Auto)",
+        "category": "Augment Tracker"
+      }
+,
+      {
+        "command": "augmentTracker.manualRefresh",
+        "title": "🔄 Manual Refresh",
+        "category": "Augment Tracker"
+      },
+      {
+        "command": "augmentTracker.setLanguage",
+        "title": "🌐 Set Language",
+        "category": "Augment Tracker"
+      },
+      {
+        "command": "augmentTracker.checkCookieStatus",
+        "title": "🍪 Check Cookie Status",
+        "category": "Augment Tracker"
+      },
+      {
+        "command": "augmentTracker.refreshCookie",
+        "title": "🔄 Refresh Cookie",
+        "category": "Augment Tracker"
+      },
+      {
+        "command": "augmentTracker.logout",
+        "title": "🚪 Logout",
+        "category": "Augment Tracker"
+      }
+    ],
+    "configuration": {
+      "title": "Augment Usage Tracker",
+      "properties": {
+        "augmentTracker.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable the Augment usage tracker"
+        },
+        "augmentTracker.refreshInterval": {
+          "type": "number",
+          "default": 5,
+          "description": "Status bar refresh interval in seconds",
+          "minimum": 1,
+          "maximum": 300
+        },
+        "augmentTracker.showInStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show usage statistics in status bar"
+        },
+        "augment.cookies": {
+          "type": "string",
+          "default": "",
+          "description": "Augment browser session cookies",
+          "scope": "application"
+        },
+        "augmentTracker.language": {
+          "type": "string",
+          "enum": ["auto", "en", "zh-cn"],
+          "enumDescriptions": [
+            "Auto (Follow VSCode)",
+            "English",
+            "Simplified Chinese"
+          ],
+          "default": "auto",
+          "description": "Interface language setting",
+          "scope": "application"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "package": "npx @vscode/vsce package --no-dependencies",
+    "clean": "rimraf out *.vsix"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {}
+}
