@@ -2,7 +2,7 @@
   "name": "augment-usage-tracker",
   "displayName": "Augment Usage Tracker",
   "description": "Track and display Augment AI usage statistics in VSCode status bar",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publisher": "augment-usage-tracker",
   "author": {
     "name": "akapril",
@@ -62,11 +62,6 @@
       {
         "command": "augmentTracker.setupCookies",
         "title": "%command.setupCookies%",
-        "category": "Augment Tracker"
-      },
-      {
-        "command": "augmentTracker.simpleCookieSetup",
-        "title": "🍪 超简单Cookie配置",
         "category": "Augment Tracker"
       },
       {

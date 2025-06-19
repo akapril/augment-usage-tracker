@@ -30,13 +30,22 @@
 
 通过 `Ctrl+Shift+P` 打开命令面板，然后输入：
 
-- **Augment: Web Login** - 打开浏览器并引导配置认证
-- **Augment: Setup Cookies** - 直接在VSCode中输入cookie
-- **Augment: 超简单Cookie配置** - 详细指导页面配置
-- **Augment: Manual Refresh** - 立即更新数据
-- **Augment: Check Cookie Status** - 查看认证状态
-- **Augment: Logout** - 清空所有数据
-- **Augment: Show Details** - 查看详细使用统计
+### 🔐 认证相关
+- **🌐 网页自动登录** (`Augment Tracker: 🌐 Web Login (Auto)`) - 打开浏览器并引导配置认证
+- **设置浏览器Cookie** (`Augment Tracker: Setup Browser Cookies`) - 直接在VSCode中输入cookie
+- **🍪 检查Cookie状态** (`Augment Tracker: 🍪 Check Cookie Status`) - 查看cookie认证状态
+- **检查认证状态** (`Augment Tracker: Check Authentication Status`) - 全面检查认证状态
+- **🚪 退出登录** (`Augment Tracker: 🚪 Logout`) - 清空所有认证数据
+
+### 📊 数据管理
+- **🔄 手动刷新** (`Augment Tracker: 🔄 Manual Refresh`) - 立即更新使用数据
+- **显示使用详情** (`Augment Tracker: Show Usage Details`) - 查看详细使用统计
+- **重置使用统计** (`Augment Tracker: Reset Usage Statistics`) - 重置本地统计数据
+
+### ⚙️ 设置配置
+- **打开设置** (`Augment Tracker: Open Settings`) - 打开插件配置页面
+- **🌐 设置语言** (`Augment Tracker: 🌐 Set Language`) - 切换中英文界面
+- **🔄 刷新Cookie** (`Augment Tracker: 🔄 Refresh Cookie`) - 刷新cookie认证
 
 ## 📊 状态栏说明
 
@@ -62,21 +71,10 @@ Augment: 未登录         # 未登录时
 
 ## 🔐 认证配置
 
-### 方式1：引导配置（推荐新用户）
-1. 使用 `Augment: Web Login` 命令
-2. 在打开的浏览器中登录 https://app.augmentcode.com
-3. 返回VSCode，点击"🍪 配置Cookie"
-4. 在VSCode输入框中粘贴从浏览器获取的cookie
-
-### 方式2：直接配置（推荐有经验用户）
 1. 使用 `Augment: Setup Cookies` 命令
 2. 在VSCode输入框中直接粘贴cookie
 3. 系统自动验证并配置
 
-### 方式3：详细指导（推荐需要帮助的用户）
-1. 使用 `Augment: 超简单Cookie配置` 命令
-2. 在详细指导页面中查看获取步骤
-3. 按照指导获取并配置cookie
 
 > **🍪 支持的Cookie格式**:
 > - 完整cookie字符串：`_session=eyJ...%%3D%%3D.sig; other=value`
@@ -86,7 +84,6 @@ Augment: 未登录         # 未登录时
 ## 🔧 高级功能
 
 ### 🍪 智能Cookie管理
-- **多格式支持**: 自动识别完整cookie、JWT格式、URL编码等
 - **自动验证**: 智能检测cookie格式和长度
 - **过期检测**: 自动检测cookie过期状态
 - **状态恢复**: VSCode重启后自动恢复认证状态
@@ -115,7 +112,7 @@ Augment: 未登录         # 未登录时
 1. 确保cookie格式正确（包含`_session=`或以`eyJ`开头）
 2. 检查cookie长度是否足够（>50字符）
 3. 重新从浏览器获取完整的cookie
-4. 使用 `Augment: 超简单Cookie配置` 查看详细指导
+4. 使用 `Augment: Web Login` 重新配置认证
 
 ### VSCode重启后状态丢失
 1. 等待10-15秒让插件自动恢复状态
@@ -157,9 +154,19 @@ MIT许可证 - 详情请查看LICENSE文件。
 
 ## 🔄 版本历史
 
-### v1.0.3（当前版本）
+### v1.0.4（当前版本）
+- 🗑️ **命令简化**: 删除simpleCookieSetup命令，简化用户选择
+- 🧹 **代码清理**: 移除约700行冗余代码，提高代码质量
+- 📋 **命令优化**: 从11个命令精简到10个核心命令
+- 🎯 **用户体验**: 专注于两种主要的Cookie配置方式
+- 📖 **文档更新**: 同步更新中英文文档和故障排除指南
+- 🌍 **国际化优化**: 解决所有硬编码文本问题，实现100%国际化覆盖
+- 🔧 **用户信息显示修复**: 修复计划显示为[object Object]问题，完善弹出信息
+
+### v1.0.3
 - 🔧 **重大修复**: VSCode重启后状态自动恢复
 - 🍪 **Cookie验证增强**: 支持URL编码和多种cookie格式
+- 🌐 **简化登录流程**: 移除复杂的localhost服务器，使用VSCode内置输入
 - 📊 **状态栏优化**: 改进显示逻辑和数据同步
 - 🔍 **调试增强**: 添加详细的日志记录便于问题排查
 - ⚡ **性能优化**: 改进API客户端初始化和数据加载

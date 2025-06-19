@@ -27,11 +27,22 @@ A VSCode extension that displays Augment AI usage statistics in the status bar.
 
 Open command palette with `Ctrl+Shift+P`, then type:
 
-- **🌐 Web Login (Auto)** - One-click authentication setup
-- **Show Usage Details** - View detailed statistics
-- **🔄 Manual Refresh** - Immediately update data
-- **🍪 Check Cookie Status** - Check authentication status
-- **🚪 Logout** - Clear all data
+### 🔐 Authentication
+- **🌐 Web Login (Auto)** (`Augment Tracker: 🌐 Web Login (Auto)`) - Open browser and guide authentication setup
+- **Setup Browser Cookies** (`Augment Tracker: Setup Browser Cookies`) - Direct cookie input in VSCode
+- **🍪 Check Cookie Status** (`Augment Tracker: 🍪 Check Cookie Status`) - Check cookie authentication status
+- **Check Authentication Status** (`Augment Tracker: Check Authentication Status`) - Comprehensive authentication check
+- **🚪 Logout** (`Augment Tracker: 🚪 Logout`) - Clear all authentication data
+
+### 📊 Data Management
+- **🔄 Manual Refresh** (`Augment Tracker: 🔄 Manual Refresh`) - Immediately update usage data
+- **Show Usage Details** (`Augment Tracker: Show Usage Details`) - View detailed usage statistics
+- **Reset Usage Statistics** (`Augment Tracker: Reset Usage Statistics`) - Reset local statistics data
+
+### ⚙️ Settings & Configuration
+- **Open Settings** (`Augment Tracker: Open Settings`) - Open plugin configuration page
+- **🌐 Set Language** (`Augment Tracker: 🌐 Set Language`) - Switch between Chinese/English interface
+- **🔄 Refresh Cookie** (`Augment Tracker: 🔄 Refresh Cookie`) - Refresh cookie authentication
 
 ## 📊 Status Bar Explanation
 
@@ -56,15 +67,10 @@ Search for "augment" in VSCode settings to configure:
 
 ## 🔐 Authentication Setup
 
-### Automatic Login (Recommended)
+### Automatic Login
 1. `Ctrl+Shift+P` → "🌐 Web Login (Auto)"
 2. Login to Augment account in browser
 3. Follow prompts to complete configuration
-
-### Manual Configuration
-1. Login to https://app.augmentcode.com
-2. `Ctrl+Shift+P` → "Setup Browser Cookies"
-3. Follow prompts to enter cookie information
 
 ## 🔧 Advanced Features
 
@@ -100,9 +106,19 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 ## 🔄 Version History
 
-### v1.0.3 (Current) 
+### v1.0.4 (Current) - December 2024
+- 🗑️ **Command Simplification**: Removed simpleCookieSetup command to simplify user choices
+- 🧹 **Code Cleanup**: Removed ~700 lines of redundant code, improved code quality
+- 📋 **Command Optimization**: Streamlined from 11 to 10 core commands
+- 🎯 **User Experience**: Focus on two main Cookie configuration methods
+- 📖 **Documentation Update**: Synchronized Chinese/English docs and troubleshooting guides
+- 🌍 **Internationalization Optimization**: Resolved all hardcoded text issues, achieved 100% i18n coverage
+- 🔧 **User Info Display Fix**: Fixed plan showing as [object Object], enhanced popup information
+
+### v1.0.3
 - 🔧 **Major Fix**: Auto state recovery after VSCode restart
 - 🍪 **Enhanced Cookie Validation**: Support URL-encoded and multiple cookie formats
+- 🌐 **Simplified Login Flow**: Removed complex localhost server, use VSCode built-in input
 - 📊 **Status Bar Optimization**: Improved display logic and data synchronization
 - 🔍 **Enhanced Debugging**: Added detailed logging for troubleshooting
 - ⚡ **Performance Optimization**: Improved API client initialization and data loading

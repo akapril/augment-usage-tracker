@@ -92,19 +92,23 @@ export class StatusBarManager implements vscode.Disposable {
 
         // 添加用户信息到tooltip
         if (this.userInfo) {
-            tooltip += `\n\n用户信息:`;
+            tooltip += `\n\n${t('userInfo.title')}`;
             if (this.userInfo.email) {
-                tooltip += `\n• 邮箱: ${this.userInfo.email}`;
+                tooltip += `\n• ${t('userInfo.email')}: ${this.userInfo.email}`;
             }
             if (this.userInfo.name) {
-                tooltip += `\n• 姓名: ${this.userInfo.name}`;
+                tooltip += `\n• ${t('userInfo.name')}: ${this.userInfo.name}`;
             }
             if (this.userInfo.plan) {
-                tooltip += `\n• 计划: ${this.userInfo.plan}`;
+                // 确保plan是字符串格式
+                const planText = typeof this.userInfo.plan === 'object'
+                    ? JSON.stringify(this.userInfo.plan)
+                    : String(this.userInfo.plan);
+                tooltip += `\n• ${t('userInfo.plan')}: ${planText}`;
             }
         }
 
-        tooltip += `\n\n使用情况:
+        tooltip += `\n\n${t('usage.title')}
 ${t('tooltip.current')}: ${usage} ${t('credits')}
 ${t('tooltip.limit')}: ${limit} ${t('credits')}
 ${t('tooltip.usage')}: ${percentage}%
@@ -124,7 +128,7 @@ ${t('tooltip.dataSource')}: ${this.getDataSourceDescription(dataSource, hasRealD
             }
         }
 
-        tooltip += `\n\nClick to ${this.getClickActionDescription()}`;
+        tooltip += `\n\n${t('statusBar.clickToShowDetails')}`;
         this.statusBarItem.tooltip = tooltip;
 
         // Change color based on usage percentage and data source
@@ -146,7 +150,7 @@ ${t('tooltip.dataSource')}: ${this.getDataSourceDescription(dataSource, hasRealD
         if (hasRealData) {
             return t('tooltip.realDataFromApi');
         } else {
-            return '无数据 (未登录)';
+            return `${t('usageDetails.noData')} (${t('statusBar.notLoggedIn')})`;
         }
     }
 
@@ -157,7 +161,12 @@ ${t('tooltip.dataSource')}: ${this.getDataSourceDescription(dataSource, hasRealD
 
     updateUserInfo(userInfo: AugmentUserInfo | null) {
         this.userInfo = userInfo;
+        console.log('👤 [StatusBarManager] 用户信息已更新:', userInfo);
         this.updateDisplay();
+    }
+
+    getUserInfo(): AugmentUserInfo | null {
+        return this.userInfo;
     }
 
     private getClickActionDescription(): string {
@@ -198,8 +207,8 @@ ${t('tooltip.dataSource')}: ${this.getDataSourceDescription(dataSource, hasRealD
         }
 
         // 显示未登录状态
-        this.statusBarItem.text = '$(circle-slash) Augment: 未登录';
-        this.statusBarItem.tooltip = 'Augment 使用量追踪器\n状态: 未登录\n点击配置认证';
+        this.statusBarItem.text = `$(circle-slash) Augment: ${t('statusBar.notLoggedIn')}`;
+        this.statusBarItem.tooltip = `${t('tooltip.augmentUsageTracker')}\n${t('usageDetails.status')}: ${t('statusBar.notLoggedIn')}\n${t('statusBar.clickToConfigure')}`;
         this.statusBarItem.command = 'augmentTracker.webLogin';
         this.statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
         this.statusBarItem.show();

@@ -298,18 +298,31 @@ export class AugmentApiClient {
 
         try {
             const data = response.data;
+            console.log('🔍 [parseUserResponse] 原始用户数据:', JSON.stringify(data, null, 2));
+
+            // 处理plan字段，确保是字符串格式
+            let planValue = data.plan || data.planType || data.subscriptionType;
+            if (planValue && typeof planValue === 'object') {
+                console.log('📋 [parseUserResponse] Plan是对象类型:', planValue);
+                // 如果plan是对象，尝试提取有用信息
+                planValue = planValue.name || planValue.type || planValue.title || JSON.stringify(planValue);
+                console.log('📋 [parseUserResponse] 处理后的Plan:', planValue);
+            }
 
             // 基于HAR文件分析的用户API响应格式
-            return {
+            const userInfo = {
                 email: data.email || data.emailAddress || data.userEmail,
                 name: data.name || data.displayName || data.fullName || data.username,
                 id: data.id || data.userId || data.user_id,
-                plan: data.plan || data.planType || data.subscriptionType,
+                plan: planValue ? String(planValue) : undefined,
                 avatar: data.avatar || data.avatarUrl || data.profileImage,
                 verified: data.verified || data.emailVerified || false
             };
+
+            console.log('✅ [parseUserResponse] 解析后的用户信息:', userInfo);
+            return userInfo;
         } catch (error) {
-            console.error('Error parsing user response:', error);
+            console.error('❌ [parseUserResponse] 解析用户响应错误:', error);
             return null;
         }
     }
