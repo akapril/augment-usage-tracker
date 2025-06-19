@@ -72,15 +72,18 @@ export class AugmentApiClient {
         }
     }
 
-    private async loadCookies(): Promise<void> {
+    private loadCookies(): void {
         try {
             // Try to get cookies from VSCode configuration
             const cookies = vscode.workspace.getConfiguration().get('augment.cookies') as string;
-            if (cookies) {
-                this.cookies = cookies;
+            if (cookies && cookies.trim() !== '') {
+                this.cookies = cookies.trim();
+                console.log('🔄 从配置中恢复Cookie:', cookies.substring(0, 50) + '...');
+            } else {
+                console.log('🔍 未找到已保存的Cookie配置');
             }
         } catch (error) {
-            console.log('No Augment cookies found');
+            console.warn('❌ 加载Cookie配置失败:', error);
         }
     }
 

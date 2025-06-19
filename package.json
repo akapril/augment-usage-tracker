@@ -2,7 +2,7 @@
   "name": "augment-usage-tracker",
   "displayName": "Augment Usage Tracker",
   "description": "Track and display Augment AI usage statistics in VSCode status bar",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publisher": "augment-usage-tracker",
   "author": {
     "name": "akapril",

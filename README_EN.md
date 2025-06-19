@@ -8,11 +8,13 @@ A VSCode extension that displays Augment AI usage statistics in the status bar.
 
 - 📊 **Real-time Monitoring**: Display current usage and limits in status bar
 - 🔄 **Auto Refresh**: Automatically update usage data every 5 seconds
-- 🍪 **Smart Authentication**: Automatic cookie extraction and expiration management
-- 🌐 **One-click Login**: Automatically open browser and configure authentication
+- 🍪 **Smart Authentication**: Support multiple cookie formats with auto-expiration detection
+- 🌐 **Simplified Login**: VSCode built-in input, no complex configuration needed
 - 📈 **Usage Details**: Detailed usage statistics and remaining quota
 - 🌍 **Multi-language**: Support for Chinese and English interface
 - 🚪 **Secure Logout**: One-click clear all authentication data
+- 🔧 **State Recovery**: Auto-restore login state after VSCode restart
+- 🛠️ **Smart Debugging**: Detailed logging for easy troubleshooting
 
 ## 🚀 Quick Start
 
@@ -95,6 +97,35 @@ All authentication data is stored locally in VSCode and no data is sent to third
 ## 📄 License
 
 MIT License - See [LICENSE](LICENSE) file for details.
+
+## 🔄 Version History
+
+### v1.0.3 (Current) 
+- 🔧 **Major Fix**: Auto state recovery after VSCode restart
+- 🍪 **Enhanced Cookie Validation**: Support URL-encoded and multiple cookie formats
+- 📊 **Status Bar Optimization**: Improved display logic and data synchronization
+- 🔍 **Enhanced Debugging**: Added detailed logging for troubleshooting
+- ⚡ **Performance Optimization**: Improved API client initialization and data loading
+- 🛠️ **Error Handling**: Enhanced network error and cookie expiration handling
+
+### v1.0.2
+- 🔧 Fixed data fixed value issue
+- 📊 Improved real data fetching and display
+- 🔄 Optimized data refresh mechanism
+
+### v1.0.1
+- 🔧 Fixed cookie configuration issues
+- 📈 Improved usage data parsing
+- 🌍 Enhanced multi-language support
+
+### v1.0.0(Initial Release)
+- ✅ Real-time usage monitoring in status bar
+- ✅ Browser-based automatic authentication
+- ✅ Multi-language support (Chinese/English)
+- ✅ Smart cookie management and expiration detection
+- ✅ Secure logout and data cleanup
+- ✅ Manual refresh and detailed usage statistics
+- ✅ Configurable refresh intervals and display options
 
 ---
 

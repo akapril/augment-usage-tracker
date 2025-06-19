@@ -543,10 +543,79 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    // 简化的状态检查
-    augmentDetector.getAugmentStatus().then(status => {
-        statusBarManager.updateAugmentStatus(status);
-    });
+    // 启动时检查已保存的认证状态并恢复
+    const initializeAuthStatus = async () => {
+        try {
+            console.log('🔄 检查启动时的认证状态...');
+
+            // 检查是否有已保存的cookie
+            const savedCookies = vscode.workspace.getConfiguration().get<string>('augment.cookies', '');
+            const apiClient = (augmentDetector as any).apiClient;
+
+            if (savedCookies && savedCookies.trim() !== '') {
+                console.log('✅ 发现已保存的Cookie，正在恢复状态...');
+
+                // 确保API客户端已加载cookie
+                if (!apiClient.hasCookies()) {
+                    console.log('🔧 API客户端未加载Cookie，手动设置...');
+                    await apiClient.setCookies(savedCookies.trim());
+                }
+
+                // 尝试获取数据以验证cookie有效性
+                try {
+                    const [creditsResult, userResult] = await Promise.all([
+                        apiClient.getCreditsInfo(),
+                        apiClient.getUserInfo()
+                    ]);
+
+                    if (creditsResult.success) {
+                        console.log('✅ Cookie有效，正在恢复使用数据...');
+                        const usageData = await apiClient.parseUsageResponse(creditsResult);
+                        if (usageData) {
+                            await usageTracker.updateWithRealData(usageData);
+
+                            // 更新状态栏
+                            const status = await augmentDetector.getAugmentStatus();
+                            status.hasRealData = true;
+                            status.usageData = usageData;
+                            statusBarManager.updateAugmentStatus(status);
+
+                            // 更新用户信息
+                            if (userResult.success) {
+                                const userInfo = await apiClient.parseUserResponse(userResult);
+                                statusBarManager.updateUserInfo(userInfo);
+                            }
+
+                            console.log('🎉 认证状态恢复成功！');
+                        }
+                    } else {
+                        console.warn('⚠️ 已保存的Cookie可能已过期');
+                        // 显示未登录状态但不清除cookie，让用户决定是否重新配置
+                        const status = await augmentDetector.getAugmentStatus();
+                        statusBarManager.updateAugmentStatus(status);
+                    }
+                } catch (error) {
+                    console.error('❌ 验证已保存Cookie时出错:', error);
+                    // 显示未登录状态
+                    const status = await augmentDetector.getAugmentStatus();
+                    statusBarManager.updateAugmentStatus(status);
+                }
+            } else {
+                console.log('🔍 未找到已保存的认证信息');
+                // 显示未登录状态
+                const status = await augmentDetector.getAugmentStatus();
+                statusBarManager.updateAugmentStatus(status);
+            }
+        } catch (error) {
+            console.error('❌ 初始化认证状态时出错:', error);
+            // 回退到基本状态检查
+            const status = await augmentDetector.getAugmentStatus();
+            statusBarManager.updateAugmentStatus(status);
+        }
+    };
+
+    // 异步初始化认证状态
+    initializeAuthStatus();
 
     // Add to subscriptions
     context.subscriptions.push(
