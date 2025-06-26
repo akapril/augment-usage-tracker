@@ -1,0 +1,36 @@
+{
+  "name": "rebrowser-puppeteer-demo",
+  "version": "1.0.0",
+  "description": "Rebrowser-Puppeteer反检测技术演示项目",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "install-deps": "npm install",
+    "basic": "node src/basic-example.js",
+    "advanced": "node src/advanced-example.js",
+    "test-detection": "node src/detection-test.js",
+    "stealth-test": "node src/stealth-test.js",
+    "cloudflare-test": "node src/cloudflare-test.js"
+  },
+  "keywords": [
+    "puppeteer",
+    "rebrowser",
+    "anti-detection",
+    "web-scraping",
+    "automation",
+    "stealth"
+  ],
+  "author": "AI Assistant",
+  "license": "MIT",
+  "dependencies": {
+    "rebrowser-puppeteer": "^1.3.0",
+    "user-agents": "^1.1.0",
+    "proxy-agent": "^6.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

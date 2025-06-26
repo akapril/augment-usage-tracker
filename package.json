@@ -43,35 +43,19 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "augmentTracker",
+          "name": "Augment Tracker",
+          "when": "true"
+        }
+      ]
+    },
     "commands": [
-      {
-        "command": "augmentTracker.resetUsage",
-        "title": "%command.resetUsage%",
-        "category": "Augment Tracker"
-      },
-      {
-        "command": "augmentTracker.openSettings",
-        "title": "%command.openSettings%",
-        "category": "Augment Tracker"
-      },
       {
         "command": "augmentTracker.showDetails",
         "title": "%command.showDetails%",
-        "category": "Augment Tracker"
-      },
-      {
-        "command": "augmentTracker.setupCookies",
-        "title": "%command.setupCookies%",
-        "category": "Augment Tracker"
-      },
-      {
-        "command": "augmentTracker.checkAuthStatus",
-        "title": "%command.checkAuthStatus%",
-        "category": "Augment Tracker"
-      },
-      {
-        "command": "augmentTracker.webLogin",
-        "title": "%command.webLogin%",
         "category": "Augment Tracker"
       },
       {
@@ -80,26 +64,105 @@
         "category": "Augment Tracker"
       },
       {
-        "command": "augmentTracker.setLanguage",
-        "title": "%command.setLanguage%",
+        "command": "augmentTracker.openSettings",
+        "title": "%command.openSettings%",
         "category": "Augment Tracker"
+      },
+      {
+        "command": "augmentTracker.resetUsage",
+        "title": "%command.resetUsage%"
+      },
+      {
+        "command": "augmentTracker.setupCookies",
+        "title": "%command.setupCookies%"
+      },
+      {
+        "command": "augmentTracker.checkAuthStatus",
+        "title": "%command.checkAuthStatus%"
+      },
+      {
+        "command": "augmentTracker.webLogin",
+        "title": "%command.webLogin%"
+      },
+      {
+        "command": "augmentTracker.setLanguage",
+        "title": "%command.setLanguage%"
       },
       {
         "command": "augmentTracker.checkCookieStatus",
-        "title": "%command.checkCookieStatus%",
-        "category": "Augment Tracker"
+        "title": "%command.checkCookieStatus%"
       },
       {
         "command": "augmentTracker.refreshCookie",
-        "title": "%command.refreshCookie%",
-        "category": "Augment Tracker"
+        "title": "%command.refreshCookie%"
       },
       {
         "command": "augmentTracker.logout",
-        "title": "%command.logout%",
-        "category": "Augment Tracker"
+        "title": "%command.logout%"
+      },
+      {
+        "command": "augmentTracker.autoRegister",
+        "title": "%command.autoRegister%"
+      },
+      {
+        "command": "augmentTracker.puppeteerLogin",
+        "title": "%command.puppeteerLogin%"
+      },
+      {
+        "command": "augmentTracker.manageAccounts",
+        "title": "%command.manageAccounts%"
+      },
+      {
+        "command": "augmentTracker.switchAccount",
+        "title": "%command.switchAccount%"
+      },
+      {
+        "command": "augmentTracker.addAccount",
+        "title": "%command.addAccount%"
+      },
+      {
+        "command": "augmentTracker.removeAccount",
+        "title": "%command.removeAccount%"
+      },
+      {
+        "command": "augmentTracker.inviteTeamMembers",
+        "title": "%command.inviteTeamMembers%"
+      },
+      {
+        "command": "augmentTracker.autoAcceptInvitations",
+        "title": "%command.autoAcceptInvitations%"
+      },
+      {
+        "command": "augmentTracker.teamManagement",
+        "title": "%command.teamManagement%"
+      },
+      {
+        "command": "augmentTracker.nativeManagement",
+        "title": "%command.nativeManagement%"
+      },
+      {
+        "command": "augmentTracker.refreshTreeView",
+        "title": "刷新",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "augmentTracker.inviteTeamMembersInput",
+        "title": "邀请团队成员"
+      },
+      {
+        "command": "augmentTracker.autoAcceptInvitationsInput",
+        "title": "自动接受邀请"
       }
     ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "augmentTracker.refreshTreeView",
+          "when": "view == augmentTracker",
+          "group": "navigation"
+        }
+      ]
+    },
     "configuration": {
       "title": "Augment Usage Tracker",
       "properties": {
@@ -110,7 +173,7 @@
         },
         "augmentTracker.refreshInterval": {
           "type": "number",
-          "default": 5,
+          "default": 30,
           "description": "Status bar refresh interval in seconds",
           "minimum": 1,
           "maximum": 300
@@ -152,5 +215,7 @@
     "@types/node": "16.x",
     "typescript": "^4.9.4"
   },
-  "dependencies": {}
+  "dependencies": {
+    "puppeteer-core": "^21.0.0"
+  }
 }

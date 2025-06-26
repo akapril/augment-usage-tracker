@@ -88,7 +88,7 @@ const messages = {
         'usageDetails.realDataFromApi': 'Real data from Augment API',
 
         // Commands and buttons
-        'button.resetUsage': 'Reset Usage',
+        'button.resetUsage': 'Manual Refresh',
         'button.openSettings': 'Open Settings',
         'button.manualRefresh': 'Manual Refresh',
 
@@ -199,7 +199,7 @@ const messages = {
         'usageDetails.realDataFromApi': '来自Augment API的真实数据',
 
         // Commands and buttons
-        'button.resetUsage': '重置使用量',
+        'button.resetUsage': '手动刷新',
         'button.openSettings': '打开设置',
         'button.manualRefresh': '手动刷新',
 

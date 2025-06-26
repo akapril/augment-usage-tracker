@@ -36,7 +36,7 @@ export class StatusBarManager implements vscode.Disposable {
 
     private updateClickCommand() {
         const clickAction = this.configManager.getClickAction();
-        
+
         switch (clickAction) {
             case 'openWebsite':
                 this.statusBarItem.command = {
@@ -51,8 +51,14 @@ export class StatusBarManager implements vscode.Disposable {
             case 'openSettings':
                 this.statusBarItem.command = 'augmentTracker.openSettings';
                 break;
+            case 'teamManagement':
+                this.statusBarItem.command = 'augmentTracker.teamManagement';
+                break;
+            case 'nativeManagement':
+                this.statusBarItem.command = 'augmentTracker.nativeManagement';
+                break;
             default:
-                this.statusBarItem.command = 'augmentTracker.showDetails';
+                this.statusBarItem.command = 'augmentTracker.nativeManagement';
         }
     }
 
@@ -175,7 +181,9 @@ ${t('tooltip.dataSource')}: ${this.getDataSourceDescription(dataSource, hasRealD
             case 'openWebsite': return 'open Augment website';
             case 'showDetails': return 'show usage details';
             case 'openSettings': return 'open settings';
-            default: return 'show details';
+            case 'teamManagement': return 'open management center';
+            case 'nativeManagement': return 'open native management';
+            default: return 'open native management';
         }
     }
 
