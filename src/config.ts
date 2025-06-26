@@ -16,7 +16,7 @@ export class ConfigManager {
     }
 
     getRefreshInterval(): number {
-        return this.config.get<number>('refreshInterval', 30);
+        return this.config.get<number>('refreshInterval', 60);
     }
 
     shouldShowInStatusBar(): boolean {

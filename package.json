@@ -2,7 +2,7 @@
   "name": "augment-usage-tracker",
   "displayName": "Augment Usage Tracker",
   "description": "Track and display Augment AI usage statistics in VSCode status bar",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "publisher": "augment-usage-tracker",
   "author": {
     "name": "akapril",
@@ -110,7 +110,7 @@
         },
         "augmentTracker.refreshInterval": {
           "type": "number",
-          "default": 5,
+          "default": 60,
           "description": "Status bar refresh interval in seconds",
           "minimum": 1,
           "maximum": 300

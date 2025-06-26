@@ -61,7 +61,7 @@ $(circle-slash) Augment: Not logged in    # When not logged in
 Search for "augment" in VSCode settings to configure:
 
 - **Enable Tracker**: Turn functionality on/off
-- **Refresh Interval**: Data update frequency (default 5 seconds)
+- **Refresh Interval**: Data update frequency (default 60 seconds)
 - **Show in Status Bar**: Whether to display in status bar
 - **Interface Language**: Chinese/English switching
 
